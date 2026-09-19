@@ -109,3 +109,33 @@ function getProperFactors(n) {
 
     return factors.filter(factor => factor < n).sort((a, b) => (a < b ? -1 : 1));
 }
+
+function getAvailableMoves(n) {
+    n = BigInt(n);
+    // Falls back to the default 2^64 ceiling when loaded outside the browser
+    // (e.g. by the Node.js AI trainer under train/), where state.js's global
+    // MAX_START_NUMBER is not defined.
+    const maxStartNumber = (typeof MAX_START_NUMBER !== 'undefined') ? MAX_START_NUMBER : 2n ** 64n;
+
+    const factors = getProperFactors(n).filter(factor => n % factor === 0n && (factor !== 1n || isPrime(n)));
+
+    const moves = factors.map(factor => ({ type: 'factor', value: factor }));
+    const multiplyAddResult = n * 3n + 1n;
+    if (n % 2n === 1n && !isPrime(n) && multiplyAddResult <= maxStartNumber) {
+        moves.push({ type: 'multiplyAdd', value: multiplyAddResult });
+    }
+
+    // Sample from factors and the special move together, with a maximum of three total choices.
+    for (let i = moves.length - 1; i > 0; i--) {
+        const randomIndex = Math.floor(Math.random() * (i + 1));
+        [moves[i], moves[randomIndex]] = [moves[randomIndex], moves[i]];
+    }
+
+    return moves.slice(0, 3);
+}
+
+// Allow the Node.js AI trainer (train/) to reuse the exact same move-generation
+// logic as the browser game, without affecting browser <script> loading.
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = { gcd, modularPower, isPrime, pollardRho, factorInteger, getProperFactors, getAvailableMoves };
+}

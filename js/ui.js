@@ -20,29 +20,37 @@ function renderFactors() {
     const grid = document.getElementById('factors-grid');
     grid.innerHTML = '';
 
-    const factors = getProperFactors(gameState.currentNumber);
-    document.getElementById('factor-count').innerText = factors.length;
+    const choices = gameState.currentChoices;
+    document.getElementById('factor-count').innerText = choices.length;
     const isCurrentAi = gameState.players[gameState.currentPlayerIndex].isAi;
 
-    factors.forEach(factor => {
+    choices.forEach(choice => {
         const btn = document.createElement('button');
         btn.className = `factor-btn p-4 rounded-xl glass-panel text-center border border-slate-700/80 font-mono font-bold text-lg hover:border-accent-cyan hover:text-accent-cyan transition flex flex-col items-center justify-center ${
             isCurrentAi || gameState.isGameOver ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
         }`;
-        btn.innerHTML = `<span class="text-xl text-white">${factor}</span><span class="text-[10px] text-slate-400 font-sans font-normal mt-0.5">-${factor}</span>`;
+        if (choice.type === 'multiplyAdd') {
+            btn.innerHTML = '<span class="factor-value text-white">&times; 3 + 1</span><span class="factor-subtraction text-[10px] text-slate-400 font-sans font-normal mt-0.5">multiply and add</span>';
+        } else {
+            btn.innerHTML = `<span class="factor-value text-white">${choice.value}</span><span class="factor-subtraction text-[10px] text-slate-400 font-sans font-normal mt-0.5">-${choice.value}</span>`;
+        }
 
         if (!isCurrentAi && !gameState.isGameOver) {
-            btn.onclick = () => makeMove(factor);
-            btn.onmouseenter = () => showPreview(factor);
+            btn.onclick = () => makeMove(choice);
+            btn.onmouseenter = () => showPreview(choice);
             btn.onmouseleave = hidePreview;
         }
         grid.appendChild(btn);
     });
 }
 
-function showPreview(factor) {
+function showPreview(choice) {
+    const result = choice.type === 'multiplyAdd'
+        ? gameState.currentNumber * 3n + 1n
+        : gameState.currentNumber - choice.value;
+    const operation = choice.type === 'multiplyAdd' ? '× 3 + 1' : `- ${choice.value}`;
     document.getElementById('preview-calculation').innerText =
-        `${gameState.currentNumber} - ${factor} = ${gameState.currentNumber - factor}`;
+        `${gameState.currentNumber} ${operation} = ${result}`;
     document.getElementById('math-preview').classList.remove('opacity-0');
 }
 
@@ -62,7 +70,7 @@ function renderHistory() {
     list.innerHTML = gameState.history.map((item, idx) => `
         <div class="p-2.5 rounded-xl bg-slate-900/50 border border-slate-800/80 flex items-center justify-between text-xs">
             <div class="flex items-center gap-2"><span class="text-slate-500 w-4">#${gameState.history.length - idx}</span><span class="font-bold text-slate-200">${item.player}</span></div>
-            <div class="text-slate-400">${item.from} <span class="text-accent-rose">- ${item.factor}</span> = <span class="text-accent-cyan font-bold">${item.to}</span></div>
+            <div class="text-slate-400">${item.from} <span class="text-accent-rose">${item.action === 'multiplyAdd' ? '× 3 + 1' : `- ${item.factor}`}</span> = <span class="text-accent-cyan font-bold">${item.to}</span></div>
         </div>
     `).join('');
 }

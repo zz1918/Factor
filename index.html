@@ -64,7 +64,21 @@
 
         /* Factor button hover animations */
         .factor-btn {
+            min-width: 0;
+            overflow: hidden;
             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .factor-btn .factor-value {
+            max-width: 100%;
+            font-size: clamp(0.75rem, 1.8vw, 1.25rem);
+            line-height: 1.15;
+            overflow-wrap: anywhere;
+            word-break: break-all;
+        }
+        .factor-btn .factor-subtraction {
+            max-width: 100%;
+            overflow-wrap: anywhere;
+            word-break: break-all;
         }
         .factor-btn:hover {
             transform: translateY(-2px) scale(1.02);
@@ -88,6 +102,15 @@
         }
         ::-webkit-scrollbar-thumb:hover {
             background: rgba(99, 102, 241, 0.8);
+        }
+
+        /* Review-mode "chosen option" highlight animation */
+        @keyframes choice-blink {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+            50% { box-shadow: 0 0 22px 4px rgba(16, 185, 129, 0.85); }
+        }
+        .choice-blink {
+            animation: choice-blink 0.5s ease-in-out 2;
         }
     </style>
 </head>
@@ -132,7 +155,7 @@
                     <i class="fa-solid fa-play"></i> Play
                 </button>
 
-                <button onclick="loadSavedGame()" class="w-full py-3.5 rounded-xl glass-panel hover:bg-slate-700/60 font-semibold text-slate-200 hover:text-white transition duration-200 flex items-center justify-center gap-3">
+                <button onclick="openLoadScreen()" class="w-full py-3.5 rounded-xl glass-panel hover:bg-slate-700/60 font-semibold text-slate-200 hover:text-white transition duration-200 flex items-center justify-center gap-3">
                     <i class="fa-solid fa-folder-open text-accent-cyan"></i> Load Game
                 </button>
 
@@ -200,6 +223,19 @@
                     </div>
                     <i class="fa-solid fa-chevron-right text-slate-600 group-hover:text-accent-amber transition"></i>
                 </button>
+
+                <button onclick="showScreen('screen-ai-training')" class="p-5 rounded-2xl bg-slate-800/80 border border-slate-700 hover:border-accent-emerald/80 hover:bg-emerald-950/30 transition text-left group flex items-center justify-between">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-xl bg-accent-emerald/20 text-accent-emerald flex items-center justify-center text-xl group-hover:bg-accent-emerald group-hover:text-slate-900 transition">
+                            <i class="fa-solid fa-brain"></i>
+                        </div>
+                        <div>
+                            <div class="font-bold text-lg text-slate-100">Train AI</div>
+                            <div class="text-xs text-slate-400">Train and save a neural-network policy directly in this browser.</div>
+                        </div>
+                    </div>
+                    <i class="fa-solid fa-chevron-right text-slate-600 group-hover:text-accent-emerald transition"></i>
+                </button>
             </div>
 
             <button onclick="showScreen('screen-main-menu')" class="mt-4 px-6 py-2.5 rounded-xl border border-slate-700 hover:bg-slate-800 text-slate-400 hover:text-slate-200 text-sm font-semibold transition">
@@ -207,7 +243,48 @@
             </button>
         </section>
 
-        <!-- ==================== 3. AI TYPE SELECT SCREEN ==================== -->
+        <!-- ==================== 3. AI TRAINING SCREEN ==================== -->
+        <section id="screen-ai-training" class="screen hidden w-full max-w-2xl glass-panel rounded-3xl p-8 shadow-2xl space-y-6">
+            <div class="space-y-1 text-center">
+                <h2 class="text-3xl font-bold">Train AI</h2>
+                <p class="text-slate-400 text-sm">Run PPO self-play and save a resumable neural-network checkpoint.</p>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <label class="text-sm font-semibold text-slate-300">
+                    PPO iterations
+                    <input id="training-cycles" type="number" min="1" max="10000" value="10"
+                        class="mt-2 w-full bg-slate-900/80 border border-slate-700 rounded-xl px-4 py-3 text-white font-mono focus:outline-none focus:border-brand-500">
+                </label>
+                <label class="text-sm font-semibold text-slate-300">
+                    Rollout samples per iteration
+                    <select id="training-rollout-size" class="mt-2 w-full bg-slate-900/80 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-brand-500">
+                        <option value="128">128 (fast)</option>
+                        <option value="256" selected>256 (recommended)</option>
+                        <option value="512">512 (slower)</option>
+                    </select>
+                </label>
+            </div>
+
+            <div class="bg-slate-900/40 border border-slate-800 rounded-2xl p-4 space-y-2 text-sm text-slate-300">
+                <div class="font-semibold text-accent-emerald">Training plan</div>
+                <div>1. Generate self-play games using the real game rules and legal-move mask.</div>
+                <div>2. Update a policy/value network with PPO and Adam after every rollout.</div>
+                <div>3. Save the current model and latest resumable checkpoint in browser storage.</div>
+                <div>4. Export the checkpoint to keep a portable JSON backup.</div>
+            </div>
+            <div id="training-result" class="hidden bg-slate-900/60 border border-slate-700 rounded-2xl p-4 text-sm"></div>
+
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
+                <button onclick="showScreen('screen-mode-select')" class="py-3 rounded-xl border border-slate-700 hover:bg-slate-800 font-semibold text-slate-300 transition">Back</button>
+                <button id="training-run-button" onclick="runAiTraining()" class="py-3 rounded-xl bg-accent-emerald hover:bg-emerald-400 text-slate-950 font-bold shadow-lg transition">Start / Resume</button>
+                <button id="training-stop-button" onclick="stopAiTraining()" disabled class="py-3 rounded-xl border border-rose-500/50 text-rose-300 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-rose-950/30 font-semibold transition">Stop</button>
+                <button onclick="exportAiTrainingCheckpoint()" class="py-3 rounded-xl border border-brand-500/50 text-brand-300 hover:bg-brand-950/30 font-semibold transition">Export Checkpoint</button>
+            </div>
+        </section>
+
+
+        <!-- ==================== 4. AI TYPE SELECT SCREEN ==================== -->
         <section id="screen-ai-select" class="screen hidden w-full max-w-lg glass-panel rounded-3xl p-8 shadow-2xl space-y-6">
             <div class="space-y-1 text-center">
                 <h2 class="text-3xl font-bold">Select AI Types</h2>
@@ -227,7 +304,7 @@
         </section>
 
 
-        <!-- ==================== 4. SETTINGS SCREEN ==================== -->
+        <!-- ==================== 5. SETTINGS SCREEN ==================== -->
         <section id="screen-settings" class="screen hidden w-full max-w-md glass-panel rounded-3xl p-8 shadow-2xl text-center space-y-6">
             <div class="space-y-1">
                 <h2 class="text-3xl font-bold">Game Settings</h2>
@@ -244,6 +321,12 @@
                     <p class="text-xs text-slate-500 mt-2">
                         Enter an integer from 2 to 2<sup>64</sup> (18,446,744,073,709,551,616). Default is 1000.
                     </p>
+                </div>
+                <div>
+                    <label for="setting-max-steps" class="block text-sm font-medium text-slate-300 mb-2">Maximum Steps Before Tie</label>
+                    <input type="number" id="setting-max-steps" min="1" max="100000" value="100"
+                        class="w-full bg-slate-900/80 border border-slate-700 focus:border-brand-500 rounded-xl px-4 py-3 text-xl font-mono text-center text-white focus:outline-none focus:ring-2 focus:ring-brand-500/40 transition">
+                    <p class="text-xs text-slate-500 mt-2">A game reaching this limit is a tie and gives both players 0 points.</p>
                 </div>
 
                 <div class="bg-slate-900/40 border border-slate-800 rounded-2xl p-4 space-y-3">
@@ -268,7 +351,48 @@
         </section>
 
 
-        <!-- ==================== 5. MAIN GAME BOARD SCREEN ==================== -->
+        <!-- ==================== 5b. LOAD SCREEN ==================== -->
+        <section id="screen-load" class="screen hidden w-full max-w-3xl glass-panel rounded-3xl p-8 shadow-2xl space-y-6">
+            <div class="flex items-center justify-between gap-4">
+                <div>
+                    <h2 class="text-3xl font-bold">Load</h2>
+                    <p class="text-slate-400 text-sm">Resume an in-progress game or review a completed match.</p>
+                </div>
+                <button onclick="showScreen('screen-main-menu')" class="py-2.5 px-4 rounded-xl border border-slate-700 hover:bg-slate-800 font-semibold text-slate-300 transition flex items-center gap-2 shrink-0">
+                    <i class="fa-solid fa-arrow-left"></i> Back
+                </button>
+            </div>
+
+            <div id="load-continue-section" class="hidden space-y-2">
+                <h3 class="text-xs uppercase tracking-wider text-slate-500 font-semibold">In-Progress Game</h3>
+                <button onclick="loadSavedGame()" class="w-full p-4 rounded-xl bg-brand-900/30 border border-brand-500/40 hover:border-brand-500/80 transition text-left flex items-center justify-between gap-3">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-lg bg-brand-500/20 text-brand-500 flex items-center justify-center">
+                            <i class="fa-solid fa-arrow-rotate-right"></i>
+                        </div>
+                        <div>
+                            <div class="font-bold text-sm text-slate-100">Resume Saved Game</div>
+                            <div class="text-xs text-slate-400">Continue where you last quick-saved.</div>
+                        </div>
+                    </div>
+                    <i class="fa-solid fa-chevron-right text-slate-500"></i>
+                </button>
+            </div>
+
+            <div class="space-y-2">
+                <h3 class="text-xs uppercase tracking-wider text-slate-500 font-semibold">Player Game History</h3>
+                <div id="load-player-history-list" class="space-y-2 max-h-60 overflow-y-auto pr-1"></div>
+            </div>
+
+            <div class="space-y-2">
+                <h3 class="text-xs uppercase tracking-wider text-slate-500 font-semibold">AI Battle History</h3>
+                <p class="text-[11px] text-slate-500 -mt-1">Includes EvE matches and saved replays from AI training runs.</p>
+                <div id="load-ai-history-list" class="space-y-2 max-h-60 overflow-y-auto pr-1"></div>
+            </div>
+        </section>
+
+
+        <!-- ==================== 6. MAIN GAME BOARD SCREEN ==================== -->
         <section id="screen-game" class="screen hidden w-full grid grid-cols-1 lg:grid-cols-12 gap-6">
             
             <!-- Left Side: Current State & Active Turn (lg:col-span-5) -->
@@ -326,9 +450,9 @@
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4 pb-3 border-b border-slate-700/60">
                         <div>
                             <h3 class="text-lg font-bold text-slate-100 flex items-center gap-2">
-                                <i class="fa-solid fa-cubes text-accent-cyan"></i> Proper Factors
+                                <i class="fa-solid fa-cubes text-accent-cyan"></i> Available Moves
                             </h3>
-                            <p class="text-xs text-slate-400">Select a factor (&ge; 1 and &lt; Current) to subtract from the total.</p>
+                            <p class="text-xs text-slate-400">Choose up to three randomly sampled factors or special moves.</p>
                         </div>
                         <div class="text-xs font-mono bg-slate-900/60 px-3 py-1.5 rounded-lg border border-slate-800 text-slate-400 self-start sm:self-auto">
                             Available: <span id="factor-count" class="text-accent-cyan font-bold">0</span>
@@ -336,7 +460,7 @@
                     </div>
 
                     <!-- Grid of Factor Buttons -->
-                    <div id="factors-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 max-h-[420px] overflow-y-auto pr-1 py-1">
+                    <div id="factors-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 max-h-[420px] overflow-y-auto overflow-x-hidden pr-1 py-1">
                         <!-- Populated by JS -->
                     </div>
                 </div>
@@ -350,9 +474,71 @@
 
         </section>
 
+
+        <!-- ==================== 6b. REVIEW MODE SCREEN ==================== -->
+        <section id="screen-review" class="screen hidden w-full max-w-4xl glass-panel rounded-3xl p-6 sm:p-8 shadow-2xl space-y-5">
+            <div class="flex items-start justify-between gap-4 flex-wrap">
+                <div>
+                    <h2 id="review-title" class="text-2xl sm:text-3xl font-bold">Battle Review</h2>
+                    <p id="review-players" class="text-slate-300 text-sm font-medium"></p>
+                    <p id="review-meta" class="text-slate-500 text-xs mt-1"></p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <div id="review-score-badges" class="flex gap-2"></div>
+                    <button onclick="reviewGoBack()" class="py-2.5 px-4 rounded-xl border border-slate-700 hover:bg-slate-800 font-semibold text-slate-300 transition flex items-center gap-2 shrink-0">
+                        <i class="fa-solid fa-arrow-left"></i> Back
+                    </button>
+                </div>
+            </div>
+
+            <div class="text-center py-4">
+                <div class="text-xs uppercase tracking-widest text-slate-500 font-semibold mb-1">Current Number</div>
+                <div id="review-current-number" class="font-mono font-black text-3xl sm:text-4xl break-all text-white">0</div>
+            </div>
+
+            <p id="review-move-caption" class="text-center text-sm text-slate-400 min-h-[1.5rem]"></p>
+
+            <div id="review-options-grid" class="grid grid-cols-3 gap-3"></div>
+
+            <div class="rounded-xl border border-slate-700 bg-slate-900/40 p-3">
+                <canvas id="review-chart" class="w-full h-48 cursor-crosshair"></canvas>
+                <div class="flex justify-end mt-2">
+                    <button id="review-log-toggle" onclick="toggleReviewLogScale()" class="text-xs font-semibold px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition">
+                        Show log(number)
+                    </button>
+                </div>
+            </div>
+
+            <div class="space-y-3">
+                <input id="review-progress-slider" type="range" min="0" max="0" value="0" oninput="scrubReview(this.value)" class="w-full accent-brand-500">
+                <div class="flex items-center justify-between gap-3">
+                    <span id="review-step-label" class="text-xs font-mono text-slate-400 w-20 shrink-0">0 / 0</span>
+                    <div class="flex items-center gap-2">
+                        <button onclick="reviewStepBackward()" class="w-10 h-10 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-200 flex items-center justify-center transition">
+                            <i class="fa-solid fa-backward-step"></i>
+                        </button>
+                        <button id="review-play-button" onclick="toggleReviewPlayback()" class="w-12 h-12 rounded-full bg-brand-600 hover:bg-brand-500 text-white flex items-center justify-center transition shadow-lg">
+                            <i class="fa-solid fa-play"></i>
+                        </button>
+                        <button onclick="reviewStepForward()" class="w-10 h-10 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-200 flex items-center justify-center transition">
+                            <i class="fa-solid fa-forward-step"></i>
+                        </button>
+                    </div>
+                    <div class="flex items-center gap-2 w-40 shrink-0 justify-end">
+                        <i class="fa-solid fa-gauge-high text-slate-500 text-xs"></i>
+                        <input id="review-speed-slider" type="range" min="0.5" max="10" step="0.5" value="2" oninput="updateReviewSpeed(this.value)" class="w-20 accent-brand-500">
+                    </div>
+                </div>
+                <div class="text-center text-[11px] text-slate-500">
+                    <span id="review-speed-label">2 moves/sec</span>
+                </div>
+            </div>
+        </section>
+
     </main>
 
     <!-- ==================== GAME OVER MODAL ==================== -->
+
     <div id="modal-game-over" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
         <div class="glass-panel max-w-md w-full rounded-3xl p-8 text-center space-y-6 shadow-2xl border-2 border-brand-500/50 transform scale-95 transition-transform duration-300">
             <div class="w-20 h-20 bg-gradient-to-tr from-amber-500 to-amber-300 rounded-full flex items-center justify-center mx-auto text-4xl text-slate-950 shadow-lg glow-box">
@@ -373,6 +559,10 @@
                 <div>
                     <div class="text-xs text-slate-500">Starting Number</div>
                     <div id="stat-start-num" class="text-xl font-mono font-bold text-accent-cyan">1000</div>
+                </div>
+                <div>
+                    <div class="text-xs text-slate-500">Winner Score</div>
+                    <div id="stat-score" class="text-xl font-mono font-bold text-accent-emerald">0</div>
                 </div>
             </div>
 
@@ -396,9 +586,15 @@
     <!-- ==================== JAVASCRIPT MODULES ==================== -->
     <script src="js/state.js"></script>
     <script src="js/game-rules.js"></script>
+    <script src="js/ai/features.js"></script>
+    <script src="js/ai/neuralnet.js"></script>
+    <script src="js/ai/model/model.js"></script>
     <script src="js/ai/strategies.js"></script>
+    <script src="js/ai/training.js"></script>
     <script src="js/ui.js"></script>
     <script src="js/storage.js"></script>
+    <script src="js/history.js"></script>
+    <script src="js/review.js"></script>
     <script src="js/game.js"></script>
     <script src="js/app.js"></script>
 </body>
