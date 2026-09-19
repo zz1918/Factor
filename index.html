@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Factor Strike - Number Strategy Game</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Outfit', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#eef2ff',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                            900: '#312e81',
+                        },
+                        accent: {
+                            cyan: '#06b6d4',
+                            emerald: '#10b981',
+                            rose: '#f43f5e',
+                            amber: '#f59e0b',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        /* Custom scrollbars and glowing backdrop effects */
+        body {
+            background: radial-gradient(circle at top center, #1e1b4b 0%, #0f172a 100%);
+            min-height: 100vh;
+            color: #f8fafc;
+            user-select: none;
+        }
+
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .glow-text {
+            text-shadow: 0 0 20px rgba(99, 102, 241, 0.6);
+        }
+
+        .glow-box {
+            box-shadow: 0 0 30px -5px rgba(99, 102, 241, 0.3);
+        }
+
+        /* Factor button hover animations */
+        .factor-btn {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .factor-btn:hover {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 8px 20px -4px rgba(6, 182, 212, 0.4);
+        }
+        .factor-btn:active {
+            transform: translateY(1px) scale(0.98);
+        }
+
+        /* Custom scrollbar for move log */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.6);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(99, 102, 241, 0.4);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(99, 102, 241, 0.8);
+        }
+    </style>
+</head>
+<body class="font-sans antialiased flex flex-col justify-between min-h-screen p-4 md:p-8">
+
+    <!-- Top Header / Bar -->
+    <header class="max-w-6xl mx-auto w-full flex justify-between items-center py-2 mb-4">
+        <div class="flex items-center gap-3 cursor-pointer" onclick="showScreen('screen-main-menu')">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-accent-cyan flex items-center justify-center font-bold text-xl shadow-lg">
+                <i class="fa-solid fa-calculator text-white"></i>
+            </div>
+            <h1 class="text-2xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-slate-200 to-brand-500">
+                FACTOR<span class="text-accent-cyan">STRIKE</span>
+            </h1>
+        </div>
+        
+        <div id="quick-actions" class="hidden flex items-center gap-2">
+            <button onclick="saveCurrentGame()" title="Quick Save Game" class="p-2.5 rounded-lg glass-panel hover:bg-slate-700/50 text-slate-300 hover:text-white transition">
+                <i class="fa-solid fa-floppy-disk"></i>
+            </button>
+            <button onclick="confirmExitToMenu()" title="Main Menu" class="p-2.5 rounded-lg glass-panel hover:bg-slate-700/50 text-slate-300 hover:text-white transition">
+                <i class="fa-solid fa-house"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="max-w-6xl mx-auto w-full flex-grow flex items-center justify-center">
+
+        <!-- ==================== 1. MAIN MENU SCREEN ==================== -->
+        <section id="screen-main-menu" class="screen w-full max-w-md glass-panel rounded-3xl p-8 shadow-2xl text-center space-y-6">
+            <div class="space-y-2">
+                <div class="inline-block px-3 py-1 bg-brand-500/10 border border-brand-500/30 rounded-full text-brand-500 text-xs font-semibold tracking-wider uppercase mb-2">
+                    Math Strategy Game
+                </div>
+                <h2 class="text-4xl font-extrabold glow-text">Reach 1 To Win</h2>
+                <p class="text-slate-400 text-sm">Strategic subtraction using positive proper factors.</p>
+            </div>
+
+            <div class="flex flex-col space-y-3 pt-4">
+                <button onclick="showScreen('screen-mode-select')" class="w-full py-4 rounded-xl bg-gradient-to-r from-brand-600 to-brand-500 hover:from-brand-500 hover:to-brand-600 font-bold text-lg shadow-lg hover:shadow-brand-500/25 transition duration-200 flex items-center justify-center gap-3">
+                    <i class="fa-solid fa-play"></i> Play
+                </button>
+
+                <button onclick="loadSavedGame()" class="w-full py-3.5 rounded-xl glass-panel hover:bg-slate-700/60 font-semibold text-slate-200 hover:text-white transition duration-200 flex items-center justify-center gap-3">
+                    <i class="fa-solid fa-folder-open text-accent-cyan"></i> Load Game
+                </button>
+
+                <button onclick="showScreen('screen-settings')" class="w-full py-3.5 rounded-xl glass-panel hover:bg-slate-700/60 font-semibold text-slate-200 hover:text-white transition duration-200 flex items-center justify-center gap-3">
+                    <i class="fa-solid fa-sliders text-accent-amber"></i> Settings
+                </button>
+
+                <button onclick="handleExit()" class="w-full py-3.5 rounded-xl glass-panel hover:bg-rose-950/30 border-rose-500/20 hover:border-rose-500/40 font-semibold text-slate-400 hover:text-rose-300 transition duration-200 flex items-center justify-center gap-3">
+                    <i class="fa-solid fa-power-off"></i> Exit
+                </button>
+            </div>
+            
+            <div class="text-xs text-slate-500 pt-2">
+                Default Starting Number: <span id="menu-default-number-display" class="font-mono text-slate-300">1000</span>
+            </div>
+        </section>
+
+
+        <!-- ==================== 2. MODE SELECT SCREEN ==================== -->
+        <section id="screen-mode-select" class="screen hidden w-full max-w-lg glass-panel rounded-3xl p-8 shadow-2xl text-center space-y-6">
+            <div class="space-y-1">
+                <h2 class="text-3xl font-bold">Select Game Mode</h2>
+                <p class="text-slate-400 text-sm">Choose who will participate in this session</p>
+            </div>
+
+            <div class="grid grid-cols-1 gap-4 pt-2">
+                <!-- PvP -->
+                <button onclick="selectGameMode('PvP')" class="p-5 rounded-2xl bg-slate-800/80 border border-slate-700 hover:border-brand-500/80 hover:bg-brand-900/30 transition text-left group flex items-center justify-between">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-xl bg-brand-500/20 text-brand-500 flex items-center justify-center text-xl group-hover:bg-brand-500 group-hover:text-white transition">
+                            <i class="fa-solid fa-users"></i>
+                        </div>
+                        <div>
+                            <div class="font-bold text-lg text-slate-100">PvP (Player vs Player)</div>
+                            <div class="text-xs text-slate-400">Play locally with a friend taking turn-by-turn moves.</div>
+                        </div>
+                    </div>
+                    <i class="fa-solid fa-chevron-right text-slate-600 group-hover:text-brand-500 transition"></i>
+                </button>
+
+                <!-- PvE -->
+                <button onclick="selectGameMode('PvE')" class="p-5 rounded-2xl bg-slate-800/80 border border-slate-700 hover:border-accent-cyan/80 hover:bg-cyan-950/30 transition text-left group flex items-center justify-between">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-xl bg-accent-cyan/20 text-accent-cyan flex items-center justify-center text-xl group-hover:bg-accent-cyan group-hover:text-slate-900 transition">
+                            <i class="fa-solid fa-user-robot"></i>
+                        </div>
+                        <div>
+                            <div class="font-bold text-lg text-slate-100">PvE (Player vs AI)</div>
+                            <div class="text-xs text-slate-400">Challenge the computer opponent in a math battle.</div>
+                        </div>
+                    </div>
+                    <i class="fa-solid fa-chevron-right text-slate-600 group-hover:text-accent-cyan transition"></i>
+                </button>
+
+                <!-- EvE -->
+                <button onclick="selectGameMode('EvE')" class="p-5 rounded-2xl bg-slate-800/80 border border-slate-700 hover:border-accent-amber/80 hover:bg-amber-950/30 transition text-left group flex items-center justify-between">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-xl bg-accent-amber/20 text-accent-amber flex items-center justify-center text-xl group-hover:bg-accent-amber group-hover:text-slate-900 transition">
+                            <i class="fa-solid fa-robot"></i>
+                        </div>
+                        <div>
+                            <div class="font-bold text-lg text-slate-100">EvE (AI vs AI)</div>
+                            <div class="text-xs text-slate-400">Watch two AI bots compete automatically.</div>
+                        </div>
+                    </div>
+                    <i class="fa-solid fa-chevron-right text-slate-600 group-hover:text-accent-amber transition"></i>
+                </button>
+            </div>
+
+            <button onclick="showScreen('screen-main-menu')" class="mt-4 px-6 py-2.5 rounded-xl border border-slate-700 hover:bg-slate-800 text-slate-400 hover:text-slate-200 text-sm font-semibold transition">
+                <i class="fa-solid fa-arrow-left mr-2"></i> Back to Menu
+            </button>
+        </section>
+
+        <!-- ==================== 3. AI TYPE SELECT SCREEN ==================== -->
+        <section id="screen-ai-select" class="screen hidden w-full max-w-lg glass-panel rounded-3xl p-8 shadow-2xl space-y-6">
+            <div class="space-y-1 text-center">
+                <h2 class="text-3xl font-bold">Select AI Types</h2>
+                <p id="ai-select-description" class="text-slate-400 text-sm">Choose the strategy used by the AI opponent.</p>
+            </div>
+
+            <div id="ai-select-options" class="space-y-4"></div>
+
+            <div class="flex gap-3 pt-2">
+                <button onclick="showScreen('screen-mode-select')" class="flex-1 py-3 rounded-xl border border-slate-700 hover:bg-slate-800 font-semibold text-slate-300 transition">
+                    <i class="fa-solid fa-arrow-left mr-2"></i> Back
+                </button>
+                <button onclick="confirmAiSelection()" class="flex-1 py-3 rounded-xl bg-brand-600 hover:bg-brand-500 font-bold text-white shadow-lg transition">
+                    Continue
+                </button>
+            </div>
+        </section>
+
+
+        <!-- ==================== 4. SETTINGS SCREEN ==================== -->
+        <section id="screen-settings" class="screen hidden w-full max-w-md glass-panel rounded-3xl p-8 shadow-2xl text-center space-y-6">
+            <div class="space-y-1">
+                <h2 class="text-3xl font-bold">Game Settings</h2>
+                <p class="text-slate-400 text-sm">Configure your starting game rules</p>
+            </div>
+
+            <form onsubmit="saveSettings(event)" class="space-y-6 text-left pt-2">
+                <div>
+                    <label for="setting-start-number" class="block text-sm font-medium text-slate-300 mb-2">
+                        Starting Integer Value (<span class="text-accent-cyan">N &gt; 1</span>)
+                    </label>
+                    <input type="text" id="setting-start-number" inputmode="numeric" pattern="[0-9]+" value="1000" required
+                        class="w-full bg-slate-900/80 border border-slate-700 focus:border-brand-500 rounded-xl px-4 py-3 text-2xl font-mono text-center text-white focus:outline-none focus:ring-2 focus:ring-brand-500/40 transition">
+                    <p class="text-xs text-slate-500 mt-2">
+                        Enter an integer from 2 to 2<sup>64</sup> (18,446,744,073,709,551,616). Default is 1000.
+                    </p>
+                </div>
+
+                <div class="bg-slate-900/40 border border-slate-800 rounded-2xl p-4 space-y-3">
+                    <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Quick Presets</div>
+                    <div class="grid grid-cols-4 gap-2">
+                        <button type="button" onclick="setSettingPreset(100)" class="py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-mono text-slate-300 transition">100</button>
+                        <button type="button" onclick="setSettingPreset(500)" class="py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-mono text-slate-300 transition">500</button>
+                        <button type="button" onclick="setSettingPreset(1000)" class="py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-mono text-slate-300 transition">1000</button>
+                        <button type="button" onclick="setSettingPreset(2500)" class="py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-mono text-slate-300 transition">2500</button>
+                    </div>
+                </div>
+
+                <div class="flex gap-3 pt-2">
+                    <button type="button" onclick="showScreen('screen-main-menu')" class="flex-1 py-3 rounded-xl border border-slate-700 hover:bg-slate-800 font-semibold text-slate-300 transition">
+                        Cancel
+                    </button>
+                    <button type="submit" class="flex-1 py-3 rounded-xl bg-brand-600 hover:bg-brand-500 font-bold text-white shadow-lg transition">
+                        Save Changes
+                    </button>
+                </div>
+            </form>
+        </section>
+
+
+        <!-- ==================== 5. MAIN GAME BOARD SCREEN ==================== -->
+        <section id="screen-game" class="screen hidden w-full grid grid-cols-1 lg:grid-cols-12 gap-6">
+            
+            <!-- Left Side: Current State & Active Turn (lg:col-span-5) -->
+            <div class="lg:col-span-5 flex flex-col space-y-6">
+                <!-- Turn Card -->
+                <div class="glass-panel rounded-2xl p-5 flex items-center justify-between border-l-4 border-brand-500" id="turn-banner">
+                    <div class="flex items-center gap-3">
+                        <div id="player-avatar" class="w-12 h-12 rounded-xl bg-brand-500/20 text-brand-500 flex items-center justify-center text-xl font-bold">
+                            <i class="fa-solid fa-user"></i>
+                        </div>
+                        <div>
+                            <div class="text-xs uppercase tracking-wider text-slate-400 font-semibold">Active Turn</div>
+                            <div id="current-player-name" class="text-xl font-extrabold text-white">Player 1</div>
+                        </div>
+                    </div>
+                    <div id="game-mode-badge" class="px-3 py-1 rounded-full bg-slate-800 border border-slate-700 text-xs font-mono text-slate-300">
+                        PvP Mode
+                    </div>
+                </div>
+
+                <!-- Main Display Box for Current Integer -->
+                <div class="glass-panel rounded-3xl p-8 flex flex-col items-center justify-center text-center relative overflow-hidden glow-box min-h-[260px]">
+                    <div class="absolute -top-10 -right-10 w-40 h-40 bg-brand-500/10 rounded-full blur-3xl pointer-events-none"></div>
+                    <div class="absolute -bottom-10 -left-10 w-40 h-40 bg-accent-cyan/10 rounded-full blur-3xl pointer-events-none"></div>
+
+                    <span class="text-slate-400 text-xs font-semibold tracking-widest uppercase mb-2">Current Value</span>
+                    
+                    <div id="current-number-display" class="text-6xl sm:text-7xl font-extrabold font-mono tracking-tight text-white my-2 transition-all transform duration-300">
+                        1000
+                    </div>
+
+                    <div id="math-preview" class="text-slate-400 text-sm font-mono h-6 transition-opacity duration-200 opacity-0">
+                        Subtract factor -> <span class="text-accent-cyan font-bold" id="preview-calculation">1000 - 0 = 1000</span>
+                    </div>
+                </div>
+
+                <!-- Move History Log -->
+                <div class="glass-panel rounded-2xl p-5 flex-grow flex flex-col max-h-[260px] lg:max-h-[300px]">
+                    <div class="flex items-center justify-between mb-3 border-b border-slate-700/60 pb-2">
+                        <span class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
+                            <i class="fa-solid fa-clock-rotate-left text-brand-500"></i> Move History
+                        </span>
+                        <span id="move-count" class="text-xs font-mono text-slate-500">0 Moves</span>
+                    </div>
+                    
+                    <div id="move-history-list" class="space-y-2 overflow-y-auto flex-grow pr-1 text-sm font-mono">
+                        <div class="text-slate-500 text-xs text-center py-4 italic">Game started. Awaiting first move...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Side: Factor Selection Grid (lg:col-span-7) -->
+            <div class="lg:col-span-7 glass-panel rounded-3xl p-6 flex flex-col justify-between">
+                <div>
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4 pb-3 border-b border-slate-700/60">
+                        <div>
+                            <h3 class="text-lg font-bold text-slate-100 flex items-center gap-2">
+                                <i class="fa-solid fa-cubes text-accent-cyan"></i> Proper Factors
+                            </h3>
+                            <p class="text-xs text-slate-400">Select a factor (&ge; 1 and &lt; Current) to subtract from the total.</p>
+                        </div>
+                        <div class="text-xs font-mono bg-slate-900/60 px-3 py-1.5 rounded-lg border border-slate-800 text-slate-400 self-start sm:self-auto">
+                            Available: <span id="factor-count" class="text-accent-cyan font-bold">0</span>
+                        </div>
+                    </div>
+
+                    <!-- Grid of Factor Buttons -->
+                    <div id="factors-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 max-h-[420px] overflow-y-auto pr-1 py-1">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <!-- Bot Thinking Status Overlay or Controls -->
+                <div id="bot-status" class="hidden mt-4 p-3 bg-amber-500/10 border border-amber-500/30 rounded-xl text-center text-amber-400 text-sm font-medium flex items-center justify-center gap-3">
+                    <i class="fa-solid fa-circle-notch fa-spin"></i>
+                    <span id="bot-status-text">AI is computing optimal move...</span>
+                </div>
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- ==================== GAME OVER MODAL ==================== -->
+    <div id="modal-game-over" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+        <div class="glass-panel max-w-md w-full rounded-3xl p-8 text-center space-y-6 shadow-2xl border-2 border-brand-500/50 transform scale-95 transition-transform duration-300">
+            <div class="w-20 h-20 bg-gradient-to-tr from-amber-500 to-amber-300 rounded-full flex items-center justify-center mx-auto text-4xl text-slate-950 shadow-lg glow-box">
+                <i class="fa-solid fa-trophy"></i>
+            </div>
+
+            <div class="space-y-2">
+                <div class="text-xs font-bold uppercase tracking-widest text-slate-400">Match Completed</div>
+                <h2 id="winner-title" class="text-3xl font-extrabold text-white">Player 1 Wins!</h2>
+                <p id="winner-subtitle" class="text-sm text-slate-300">Reached the target number 1 first.</p>
+            </div>
+
+            <div class="bg-slate-900/60 rounded-2xl p-4 border border-slate-800 grid grid-cols-2 gap-4 text-center">
+                <div>
+                    <div class="text-xs text-slate-500">Total Moves</div>
+                    <div id="stat-total-moves" class="text-xl font-mono font-bold text-white">0</div>
+                </div>
+                <div>
+                    <div class="text-xs text-slate-500">Starting Number</div>
+                    <div id="stat-start-num" class="text-xl font-mono font-bold text-accent-cyan">1000</div>
+                </div>
+            </div>
+
+            <div class="flex flex-col gap-3 pt-2">
+                <button onclick="restartGame()" class="w-full py-3.5 rounded-xl bg-brand-600 hover:bg-brand-500 font-bold text-white shadow-lg transition flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-rotate-right"></i> Play Again
+                </button>
+                <button onclick="showScreen('screen-main-menu'); closeModal('modal-game-over');" class="w-full py-3 rounded-xl border border-slate-700 hover:bg-slate-800 font-semibold text-slate-300 transition">
+                    Main Menu
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification Overlay -->
+    <div id="toast" class="fixed bottom-6 right-6 z-50 transform translate-y-20 opacity-0 transition-all duration-300 glass-panel border border-brand-500/40 text-white px-5 py-3 rounded-xl shadow-xl flex items-center gap-3">
+        <i class="fa-solid fa-circle-info text-accent-cyan" id="toast-icon"></i>
+        <span id="toast-message" class="text-sm font-medium">Notification message</span>
+    </div>
+
+    <!-- ==================== JAVASCRIPT MODULES ==================== -->
+    <script src="js/state.js"></script>
+    <script src="js/game-rules.js"></script>
+    <script src="js/ai/strategies.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/storage.js"></script>
+    <script src="js/game.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
