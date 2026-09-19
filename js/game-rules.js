@@ -110,18 +110,15 @@ function getProperFactors(n) {
     return factors.filter(factor => factor < n).sort((a, b) => (a < b ? -1 : 1));
 }
 
-function getAvailableMoves(n) {
+function getAvailableMoves(n, startingNumber = n) {
     n = BigInt(n);
-    // Falls back to the default 2^64 ceiling when loaded outside the browser
-    // (e.g. by the Node.js AI trainer under train/), where state.js's global
-    // MAX_START_NUMBER is not defined.
-    const maxStartNumber = (typeof MAX_START_NUMBER !== 'undefined') ? MAX_START_NUMBER : 2n ** 64n;
+    const initialNumber = BigInt(startingNumber);
 
     const factors = getProperFactors(n).filter(factor => n % factor === 0n && (factor !== 1n || isPrime(n)));
 
     const moves = factors.map(factor => ({ type: 'factor', value: factor }));
     const multiplyAddResult = n * 3n + 1n;
-    if (n % 2n === 1n && !isPrime(n) && multiplyAddResult <= maxStartNumber) {
+    if (n % 2n === 1n && !isPrime(n) && multiplyAddResult <= initialNumber) {
         moves.push({ type: 'multiplyAdd', value: multiplyAddResult });
     }
 

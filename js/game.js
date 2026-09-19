@@ -13,7 +13,7 @@ function startGame(mode, aiTypes = pendingAiTypes) {
     gameState.isGameOver = false;
     gameState.isAiProcessing = false;
     gameState.winnerIndex = null;
-    gameState.currentChoices = getAvailableMoves(gameState.currentNumber);
+    gameState.currentChoices = getAvailableMoves(gameState.currentNumber, gameState.startNumber);
     gameState.scores = [0, 0];
     gameState.aiTypes = aiTypes.length ? aiTypes : ['random', 'random'];
 
@@ -62,8 +62,8 @@ function makeMove(move) {
     const newNumber = selectedMove.type === 'multiplyAdd'
         ? prevNumber * 3n + 1n
         : prevNumber - BigInt(selectedMove.value);
-    if (newNumber > MAX_START_NUMBER) {
-        showToast('Invalid move: Value cannot exceed 2^64.', 'error');
+    if (newNumber > gameState.startNumber) {
+        showToast('Invalid move: Value cannot exceed the starting number.', 'error');
         return;
     }
     const chosenIndex = gameState.currentChoices.findIndex(choice =>
@@ -98,7 +98,7 @@ function makeMove(move) {
     }
 
     gameState.currentPlayerIndex = (gameState.currentPlayerIndex + 1) % 2;
-    gameState.currentChoices = getAvailableMoves(gameState.currentNumber);
+    gameState.currentChoices = getAvailableMoves(gameState.currentNumber, gameState.startNumber);
     updateUI();
     checkAndTriggerTurn();
 }
@@ -113,7 +113,7 @@ function checkAndTriggerTurn() {
     }
 
     if (!gameState.currentChoices.length) {
-        gameState.currentChoices = getAvailableMoves(gameState.currentNumber);
+        gameState.currentChoices = getAvailableMoves(gameState.currentNumber, gameState.startNumber);
     }
     gameState.isAiProcessing = true;
     toggleBotStatus(true, `${activePlayer.name} is choosing ${getAiStrategy(activePlayer.aiType).name}...`);

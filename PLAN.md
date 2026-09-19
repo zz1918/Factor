@@ -10,7 +10,7 @@ options shown on each turn. A legal move can be:
 
 - A sampled proper-factor subtraction.
 - The `× 3 + 1` move when the current value is an odd composite number and the
-  result does not exceed `2^64`.
+  result does not exceed the initial number.
 
 Each turn displays no more than three total choices. An AI must select only
 from that displayed set.
@@ -150,7 +150,7 @@ within typical localStorage quotas.
 - Training must never select a move outside the displayed legal move list.
 - Numeric calculations must remain exact through `2^64`.
 - The `× 3 + 1` move must remain restricted to valid odd composite states and
-  must not exceed `2^64`.
+  must not exceed the initial number.
 - A training profile must remain compatible with the runtime AI strategy
   registry.
 - Training should be reproducible in future versions by recording random seeds,

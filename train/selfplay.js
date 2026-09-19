@@ -32,7 +32,7 @@ function playSelfPlayEpisode(net, options) {
     let winner = null; // 0, 1, or null (tie)
 
     while (step < maxSteps) {
-        const rawMoves = gameRules.getAvailableMoves(currentNumber);
+        const rawMoves = gameRules.getAvailableMoves(currentNumber, startNumber);
         if (!rawMoves.length) {
             // No legal moves (shouldn't normally happen since factor 1 always
             // exists for composite numbers, and n=1 ends the game already).

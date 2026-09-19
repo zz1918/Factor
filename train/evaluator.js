@@ -33,7 +33,7 @@ function playEvaluationGame(net, networkPlayer, baselineName, startNumber, maxSt
     const baseline = AI_STRATEGIES[baselineName] || AI_STRATEGIES.random;
 
     while (step < maxSteps) {
-        const rawMoves = gameRules.getAvailableMoves(currentNumber);
+        const rawMoves = gameRules.getAvailableMoves(currentNumber, startNumber);
         if (!rawMoves.length) {
             winner = 1 - playerTurn;
             break;

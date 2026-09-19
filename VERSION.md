@@ -172,3 +172,7 @@ number to **1** wins.
 
 - Added a Tutorial page covering legal moves, special moves, win conditions,
   speed-based scoring, and tie rules.
+
+  ## Version 1.6.2 - `× 3 + 1` Restricts
+
+- Restricted `× 3 + 1` moves so their result cannot exceed the initial number.

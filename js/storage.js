@@ -21,7 +21,7 @@ function loadSavedGame() {
         gameState = JSON.parse(saved, reviveBigInts);
         gameState.startNumber = BigInt(gameState.startNumber);
         gameState.currentNumber = BigInt(gameState.currentNumber);
-        gameState.currentChoices = gameState.currentChoices || getAvailableMoves(gameState.currentNumber);
+        gameState.currentChoices = gameState.currentChoices || getAvailableMoves(gameState.currentNumber, gameState.startNumber);
         gameState.aiTypes = gameState.aiTypes || gameState.players.map(player => player.aiType || 'random');
         showScreen('screen-game');
         updateUI();

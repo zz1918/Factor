@@ -28,7 +28,7 @@ function playBrowserSelfPlayEpisode(net, config) {
     const trajectories = [[], []];
 
     while (step < config.maxSteps) {
-        const rawMoves = getAvailableMoves(currentNumber);
+        const rawMoves = getAvailableMoves(currentNumber, config.startNumber);
         if (!rawMoves.length) {
             winner = 1 - playerTurn;
             break;
