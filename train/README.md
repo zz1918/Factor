@@ -60,6 +60,28 @@ Plays games against the `random`, `smallest`, and `largest` baseline
 strategies from [`js/ai/strategies.js`](../js/ai/strategies.js) and reports
 win/loss/tie counts and average score per baseline.
 
+## Deploying browser-trained checkpoints
+
+Browser training saves its active policy only in that browser's local storage.
+Exported checkpoints copied to `train/checkpoints/` are backups and are not
+loaded by GitHub Pages automatically.
+
+To deploy the strongest saved checkpoint, double-click
+[`Deploy-Best-Checkpoint.bat`](../Deploy-Best-Checkpoint.bat) in the repository
+root. It runs `train/deploy-best-checkpoint.js`, which:
+
+1. validates and evaluates every JSON checkpoint in `train/checkpoints/`;
+2. uses 100 games each against Random, Smallest Factor, and Largest Factor at
+   a start number of 1,000 and a 100-step limit;
+3. writes the highest-scoring network to
+   [`js/ai/model/model.js`](../js/ai/model/model.js);
+4. increments the semantic patch version and adds a timestamped deployment
+   record to [`VERSION.md`](../VERSION.md).
+
+The console reports invalid checkpoints it skipped and the selected checkpoint.
+After a successful run, commit and push the updated `model.js` to make that
+policy the default model on GitHub Pages.
+
 ## How it works
 
 1. **Self-play** (`selfplay.js`): the current network plays both sides of a

@@ -389,6 +389,8 @@ the deployed model on demand.
 | [`train/evaluator.js`](../train/evaluator.js) | Evaluation vs. baseline strategies |
 | [`train/train.js`](../train/train.js) | CLI training entry point (`node train/train.js`) |
 | [`train/evaluate-cli.js`](../train/evaluate-cli.js) | Standalone CLI evaluation of a saved model |
+| [`train/deploy-best-checkpoint.js`](../train/deploy-best-checkpoint.js) | Evaluates all saved checkpoints and deploys the highest-scoring policy |
+| [`Deploy-Best-Checkpoint.bat`](../Deploy-Best-Checkpoint.bat) | Double-click Windows launcher for checkpoint deployment |
 | [`train/README.md`](../train/README.md) | Usage instructions and flag reference |
 
 No Python and no external npm packages are required anywhere in this pipeline.

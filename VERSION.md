@@ -173,6 +173,12 @@ number to **1** wins.
 - Added a Tutorial page covering legal moves, special moves, win conditions,
   speed-based scoring, and tie rules.
 
-  ## Version 1.6.2 - `× 3 + 1` Restricts
+## Version 1.6.2 - `× 3 + 1` Restricts
 
 - Restricted `× 3 + 1` moves so their result cannot exceed the initial number.
+
+## Version 1.6.3 - Model Deployment
+
+- Deployed checkpoint `20260919T195105433Z-iter-1000.json` after evaluating all saved checkpoints.
+- Evaluation average score: `11.083` across 100 games each against Random, Smallest Factor, and Largest Factor.
+- Deployment timestamp (UTC): `2026-09-19T20:09:47.743Z`.

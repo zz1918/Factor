@@ -1,1 +1,3 @@
 .vscode/
+Deploy-Best-Checkpoint.bat
+train/checkpoints/*.json
