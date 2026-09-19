@@ -167,3 +167,8 @@ number to **1** wins.
   and made the newly trained model immediately available to PvE and EvE.
 - Updated settings validation and input controls to accept the complete unsigned
   64-bit range while rejecting invalid or out-of-range values.
+
+## Version 1.6.1 - Tutorial Page
+
+- Added a Tutorial page covering legal moves, special moves, win conditions,
+  speed-based scoring, and tie rules.

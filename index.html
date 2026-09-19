@@ -163,6 +163,10 @@
                     <i class="fa-solid fa-sliders text-accent-amber"></i> Settings
                 </button>
 
+                <button onclick="showScreen('screen-tutorial')" class="w-full py-3.5 rounded-xl glass-panel hover:bg-slate-700/60 font-semibold text-slate-200 hover:text-white transition duration-200 flex items-center justify-center gap-3">
+                    <i class="fa-solid fa-circle-question text-accent-cyan"></i> Tutorial
+                </button>
+
                 <button onclick="handleExit()" class="w-full py-3.5 rounded-xl glass-panel hover:bg-rose-950/30 border-rose-500/20 hover:border-rose-500/40 font-semibold text-slate-400 hover:text-rose-300 transition duration-200 flex items-center justify-center gap-3">
                     <i class="fa-solid fa-power-off"></i> Exit
                 </button>
@@ -170,6 +174,82 @@
             
             <div class="text-xs text-slate-500 pt-2">
                 Default Starting Number: <span id="menu-default-number-display" class="font-mono text-slate-300">1000</span>
+            </div>
+        </section>
+
+        <!-- ==================== 1b. TUTORIAL SCREEN ==================== -->
+        <section id="screen-tutorial" class="screen hidden w-full max-w-3xl glass-panel rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6">
+            <div class="text-center space-y-2">
+                <div class="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-accent-cyan/15 text-accent-cyan text-xl">
+                    <i class="fa-solid fa-graduation-cap"></i>
+                </div>
+                <h2 class="text-3xl font-bold">How to Play</h2>
+                <p class="text-slate-400 text-sm">Reduce the number to 1 before your opponent does.</p>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <article class="rounded-2xl border border-slate-700 bg-slate-900/40 p-5 space-y-3">
+                    <div class="flex items-center gap-3">
+                        <span class="w-8 h-8 rounded-full bg-brand-500/20 text-brand-500 flex items-center justify-center font-bold">1</span>
+                        <h3 class="font-bold text-slate-100">Make a Move</h3>
+                    </div>
+                    <p class="text-sm text-slate-300 leading-relaxed">
+                        On your turn, choose one displayed move card. A factor move subtracts a positive proper factor from the current number. For example, selecting factor 4 from 20 changes the number to 16.
+                    </p>
+                    <p class="text-xs text-slate-500">
+                        You see at most three randomly selected legal moves each turn. Choose only from those cards.
+                    </p>
+                </article>
+
+                <article class="rounded-2xl border border-slate-700 bg-slate-900/40 p-5 space-y-3">
+                    <div class="flex items-center gap-3">
+                        <span class="w-8 h-8 rounded-full bg-accent-cyan/20 text-accent-cyan flex items-center justify-center font-bold">2</span>
+                        <h3 class="font-bold text-slate-100">Use Special Moves Carefully</h3>
+                    </div>
+                    <p class="text-sm text-slate-300 leading-relaxed">
+                        An odd composite number can sometimes offer a <span class="font-mono text-accent-cyan">× 3 + 1</span> move. It increases the number, but it may create a better position for a later turn.
+                    </p>
+                    <p class="text-xs text-slate-500">
+                        The special move is unavailable for prime or even numbers and can never exceed the game limit.
+                    </p>
+                </article>
+
+                <article class="rounded-2xl border border-slate-700 bg-slate-900/40 p-5 space-y-3">
+                    <div class="flex items-center gap-3">
+                        <span class="w-8 h-8 rounded-full bg-accent-emerald/20 text-accent-emerald flex items-center justify-center font-bold">3</span>
+                        <h3 class="font-bold text-slate-100">Win the Match</h3>
+                    </div>
+                    <p class="text-sm text-slate-300 leading-relaxed">
+                        The player whose move makes the current number exactly <span class="font-mono text-accent-emerald">1</span> wins immediately. Plan ahead: each move changes the options available to the next player.
+                    </p>
+                </article>
+
+                <article class="rounded-2xl border border-slate-700 bg-slate-900/40 p-5 space-y-3">
+                    <div class="flex items-center gap-3">
+                        <span class="w-8 h-8 rounded-full bg-accent-amber/20 text-accent-amber flex items-center justify-center font-bold">4</span>
+                        <h3 class="font-bold text-slate-100">Score and Tie Rules</h3>
+                    </div>
+                    <p class="text-sm text-slate-300 leading-relaxed">
+                        A win scores <span class="font-mono text-accent-amber">maximum steps − moves used + 1</span>. Faster wins score more; the other player receives the matching negative score.
+                    </p>
+                    <p class="text-xs text-slate-500">
+                        If nobody reaches 1 before the configured maximum-step limit, the game is a tie and both players score 0.
+                    </p>
+                </article>
+            </div>
+
+            <div class="rounded-2xl border border-brand-500/30 bg-brand-500/10 px-5 py-4 text-sm text-slate-300">
+                <span class="font-semibold text-brand-500">Tip:</span>
+                Use <strong>Settings</strong> to choose the starting number and maximum-step tie limit before starting a match.
+            </div>
+
+            <div class="flex flex-col sm:flex-row gap-3 pt-1">
+                <button onclick="showScreen('screen-main-menu')" class="flex-1 py-3 rounded-xl border border-slate-700 hover:bg-slate-800 font-semibold text-slate-300 transition">
+                    Back to Menu
+                </button>
+                <button onclick="startGame('PvP', [])" class="flex-1 py-3 rounded-xl bg-brand-600 hover:bg-brand-500 font-bold text-white shadow-lg transition">
+                    Start a PvP Game
+                </button>
             </div>
         </section>
 
